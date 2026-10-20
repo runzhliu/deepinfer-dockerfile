@@ -42,7 +42,7 @@ RUN for header in cuda_runtime.h cusparse.h cublas_v2.h cublasLt.h cusolverDn.h 
     && nvcc -ccbin g++-13 -std=c++20 -arch=sm_100a -c /tmp/toolkit-check.cu -o /tmp/toolkit-check.o \
     && rm /tmp/toolkit-check.cu /tmp/toolkit-check.o
 
-FROM kernel-toolchain AS build
+FROM kernel-toolchain AS dependencies
 ARG DEEPINFER_COMMIT=8b16149741a4935e1dec8cea27853f273b374c5b
 ARG MAX_JOBS=4
 ARG NVCC_THREADS=2
@@ -67,6 +67,7 @@ RUN python -m pip install --no-cache-dir -r requirements-nvidia.txt \
     && python -m pip install --no-cache-dir --no-deps --force-reinstall nvidia-nccl-cu13==2.32.3 \
     && python /opt/container-tools/check-dependencies.py --output /opt/deepinfer/dependency-check.json
 
+FROM dependencies AS build
 # DeepSelect's build-time platform helper invokes lspci even on CPU build hosts.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends pciutils \
