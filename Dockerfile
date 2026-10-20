@@ -31,7 +31,7 @@ ENV TORCH_CUDA_ARCH_LIST=10.0a \
     NVCC_THREADS=${NVCC_THREADS}
 WORKDIR /opt/deepinfer
 COPY source.lock.json /opt/container-source.lock.json
-COPY scripts/check-upstream.py scripts/package-runtime.py /opt/container-tools/
+COPY scripts/check-upstream.py scripts/package-runtime.py scripts/check-dependencies.py /opt/container-tools/
 RUN [[ "${DEEPINFER_COMMIT}" =~ ^[0-9a-f]{40}$ ]] \
     && git init . \
     && git remote add origin https://github.com/deepseek-ai/DeepInfer.git \
@@ -41,7 +41,7 @@ RUN [[ "${DEEPINFER_COMMIT}" =~ ^[0-9a-f]{40}$ ]] \
     && python /opt/container-tools/check-upstream.py . /opt/container-source.lock.json \
     && python -m pip install --no-cache-dir pip==25.2 setuptools==80.9.0 wheel==0.45.1 \
     && ./build.sh \
-    && python -m pip check \
+    && python /opt/container-tools/check-dependencies.py --output /opt/deepinfer/dependency-check.json \
     && python /opt/container-tools/package-runtime.py /opt/deepinfer /opt/runtime /opt/container-source.lock.json
 
 FROM toolchain AS runtime
@@ -57,7 +57,7 @@ LABEL org.opencontainers.image.title="DeepInfer NVIDIA offline runtime" \
 COPY --from=build /opt/venv /opt/venv
 COPY --from=build /opt/runtime /opt/deepinfer
 COPY scripts/entrypoint.sh /usr/local/bin/deepinfer-container
-COPY scripts/doctor.py /opt/container-tools/doctor.py
+COPY scripts/doctor.py scripts/check-dependencies.py /opt/container-tools/
 RUN groupadd --gid 10001 deepinfer \
     && useradd --uid 10001 --gid 10001 --home-dir /workspace --no-create-home deepinfer \
     && mkdir -p /workspace /models /var/cache/deepinfer \

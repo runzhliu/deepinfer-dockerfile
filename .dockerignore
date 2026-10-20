@@ -3,6 +3,7 @@
 !source.lock.json
 !scripts/
 !scripts/check-upstream.py
+!scripts/check-dependencies.py
 !scripts/package-runtime.py
 !scripts/entrypoint.sh
 !scripts/doctor.py

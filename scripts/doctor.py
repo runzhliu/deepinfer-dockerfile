@@ -29,9 +29,9 @@ def main() -> int:
         if not native or any(p.is_symlink() or not p.is_file() for p in native):
             raise RuntimeError("native extension missing or dangling")
         report["checks"]["native_files"] = [p.name for p in native]
-        report["checks"]["pip_check"] = subprocess.check_output(
-            [sys.executable, "-m", "pip", "check"], text=True, stderr=subprocess.STDOUT
-        ).strip()
+        report["checks"]["dependencies"] = json.loads(subprocess.check_output(
+            [sys.executable, "/opt/container-tools/check-dependencies.py"], text=True, stderr=subprocess.STDOUT
+        ))
         for name in ("torch", "nvidia-nccl-cu13", "deep_ep", "deep_gemm", "flash_mla", "deep_select"):
             report["checks"][name] = importlib.metadata.version(name)
         report["checks"]["native_import"] = "not_executed_cpu_mode"
@@ -58,7 +58,7 @@ def main() -> int:
             report["checks"]["native_import"] = "passed"
             report["checks"]["basic_cuda_operation"] = "passed"
             report["checks"]["devices"] = devices
-        report["status"] = "passed"
+        report["status"] = report["checks"]["dependencies"]["status"]
         return 0
     except Exception as exc:
         report["status"] = "failed"

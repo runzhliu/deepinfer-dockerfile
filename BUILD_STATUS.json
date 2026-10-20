@@ -5,7 +5,7 @@
   "validation": {
     "recipe_unit_tests": {
       "status": "passed",
-      "count": 7
+      "count": 10
     },
     "shell_syntax": "passed",
     "python_syntax": "passed",

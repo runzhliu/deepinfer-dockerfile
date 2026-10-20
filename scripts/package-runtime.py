@@ -25,6 +25,10 @@ def package(source: Path, target: Path, lock_path: Path) -> dict:
     ).splitlines()
     if any(s.startswith(("-", "+", "U")) for s in submodules):
         raise ValueError("submodules are missing, changed, or conflicted")
+    dependency_report = json.loads((source / "dependency-check.json").read_text())
+    if dependency_report["status"] not in ("passed", "passed_with_upstream_override"):
+        raise ValueError("dependency validation failed")
+    shutil.copy2(source / "dependency-check.json", target / "dependency-check.json")
     result = {
         "source": json.loads(lock_path.read_text()),
         "submodules": submodules,
@@ -32,7 +36,7 @@ def package(source: Path, target: Path, lock_path: Path) -> dict:
             [{"name": d.metadata["Name"], "version": d.version} for d in importlib.metadata.distributions()],
             key=lambda d: d["name"].lower(),
         ),
-        "validation": {"pip_check": "passed", "gpu_inference": "not_executed"},
+        "validation": {"dependencies": dependency_report, "gpu_inference": "not_executed"},
     }
     (target / "build-info.json").write_text(json.dumps(result, indent=2) + "\n")
     return result

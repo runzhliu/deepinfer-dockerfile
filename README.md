@@ -58,6 +58,8 @@ docker run --rm --network none \
 
 检查 Python 版本、包元数据、`pip check`、DeepInfer 轻量导入和原生扩展文件是否真实存在。**不加载 CUDA 原生模块、不执行 GPU 算子，也不宣称模型可用。**
 
+上游存在一项明确的依赖覆盖：PyTorch `2.13.0+cu132` 的 wheel 元数据要求 NCCL `2.29.7`，但固定的 [DeepInfer 构建脚本](https://github.com/deepseek-ai/DeepInfer/blob/8b16149741a4935e1dec8cea27853f273b374c5b/build.sh) 会强制安装 `2.32.3`。检查程序保留 `pip check` 的原始输出和失败退出码，仅允许这个精确版本组合，报告为 `passed_with_upstream_override`；其他冲突仍会终止构建。报告保存在 `/opt/deepinfer/dependency-check.json`，不会删除或改写包元数据，也不把这项例外当作 GPU 兼容性证明。
+
 ### 2. GPU 导入与基本计算
 
 在安装了适配驱动和 NVIDIA Container Toolkit 的 SM100 主机执行：
@@ -110,7 +112,7 @@ docker push registry.example.com/inference/deepinfer:cu132-sm100-8b16149741a4
 - 上游要求 C++11 ABI 的 PyTorch，原生扩展与 PyTorch / CUDA / NCCL 的组合必须一致。
 - `./build.sh` 会构建固定的 vendor 算子并把 DeepInfer 扩展链接到平台目录。运行阶段必须带上真实 `.so`，不能复制一个指向构建目录的失效符号链接。
 - 部分算子使用运行时 JIT；最终镜像保留 CUDA devel、GCC、头文件和可写缓存，不能直接换成缺少编译工具的 slim 镜像。
-- `pip check` 不通过会终止构建，不通过删包元数据掩盖冲突。
+- 依赖检查只允许上述上游明确指定的 NCCL 覆盖；其他 `pip check` 错误会终止构建，不通过删包元数据掩盖冲突。
 - 没有 NVIDIA 驱动的 CPU 构建机缺少 `libcuda.so.1` 是 GPU 导入阶段的问题。不要把链接用的 CUDA stub 放进运行时动态库搜索路径冒充驱动。
 
 ## 许可证

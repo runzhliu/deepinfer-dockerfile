@@ -58,6 +58,8 @@ docker run --rm --network none \
 
 Checks Python, package metadata, `pip check`, lightweight DeepInfer import, and the existence of real native-extension files. **It does not load CUDA native modules, execute GPU operators, or establish model readiness.**
 
+Upstream has one explicit dependency override: the PyTorch `2.13.0+cu132` wheel metadata requires NCCL `2.29.7`, while the pinned [DeepInfer build script](https://github.com/deepseek-ai/DeepInfer/blob/8b16149741a4935e1dec8cea27853f273b374c5b/build.sh) force-installs `2.32.3`. The checker preserves the original `pip check` output and failing exit code, permits only this exact combination, and reports `passed_with_upstream_override`. Every other conflict still fails the build. The report is saved at `/opt/deepinfer/dependency-check.json`; package metadata is neither removed nor rewritten, and this exception does not establish GPU compatibility.
+
 ### 2. GPU imports and basic computation
 
 Run on an SM100 host with a compatible driver and NVIDIA Container Toolkit:
@@ -110,7 +112,7 @@ Authenticate to private registries outside the build. Keep registry passwords, m
 - Upstream requires a C++11-ABI PyTorch build. Native extensions must match the PyTorch / CUDA / NCCL combination.
 - `./build.sh` compiles pinned vendor operators and links the DeepInfer extension into a platform directory. The runtime needs actual `.so` files rather than dangling links into a discarded build directory.
 - Some operators use runtime JIT. The image retains CUDA devel, GCC, headers, and writable caches rather than switching to a slim image without compilers.
-- A failed `pip check` stops the build; package metadata is not removed to hide conflicts.
+- Dependency checks permit only the explicit upstream NCCL override described above. Every other `pip check` error stops the build; package metadata is not removed to hide conflicts.
 - Missing `libcuda.so.1` on a CPU build host is a GPU-import boundary. CUDA linker stubs must not be placed on the runtime library search path to impersonate a driver.
 
 ## Licensing

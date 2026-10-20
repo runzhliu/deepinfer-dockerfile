@@ -20,6 +20,7 @@ def load(name, filename):
 
 checker = load("upstream_check", "check-upstream.py")
 packager = load("runtime_packager", "package-runtime.py")
+dependency_checker = load("dependency_checker", "check-dependencies.py")
 
 
 class SourceIntegrityTests(unittest.TestCase):
@@ -81,6 +82,7 @@ class NativePackagingTests(unittest.TestCase):
         self.link.symlink_to("../../../build/_C.so")
         self.lock_path = self.root / "lock.json"
         self.lock_path.write_text("{}")
+        (self.source / "dependency-check.json").write_text('{"status":"passed"}')
 
     def test_native_symlink_is_materialized_and_no_gpu_pass_is_invented(self):
         with patch.object(packager.subprocess, "check_output", return_value=" 123 vendor/kernel\n"), \
@@ -104,6 +106,25 @@ class NativePackagingTests(unittest.TestCase):
                                 capture_output=True, text=True)
         self.assertEqual(result.returncode, 2)
         self.assertIn("MAX_JOBS", result.stderr)
+
+
+class DependencyOverrideTests(unittest.TestCase):
+    message = 'torch 2.13.0+cu132 has requirement nvidia-nccl-cu13==2.29.7, but you have nvidia-nccl-cu13 2.32.3.'
+
+    def test_upstream_override_is_explicit_and_raw_failure_is_retained(self):
+        for text in (self.message, self.message.replace('==2.29.7,', '==2.29.7; platform_system == "Linux",')):
+            report = dependency_checker.classify(1, text, dependency_checker.EXPECTED)
+            self.assertEqual(report["status"], "passed_with_upstream_override")
+            self.assertEqual(report["raw_pip_check_exit_code"], 1)
+            self.assertEqual(report["raw_pip_check"], text)
+
+    def test_additional_conflicts_are_never_hidden(self):
+        report = dependency_checker.classify(1, self.message + "\nother dependency is missing", dependency_checker.EXPECTED)
+        self.assertEqual(report["status"], "failed")
+
+    def test_different_installed_version_is_rejected(self):
+        versions = dict(dependency_checker.EXPECTED, torch="2.12.0")
+        self.assertEqual(dependency_checker.classify(1, self.message, versions)["status"], "failed")
 
 
 if __name__ == "__main__":
