@@ -39,6 +39,8 @@ bash scripts/build.sh
 
 内存紧张时降低 `MAX_JOBS` 和 `NVCC_THREADS`。FlashMLA / DeepSelect 的上游配方包含 SM100a、SM103a 的编译目标，不能通过把环境变量改成 SM90 或 SM120 就获得该硬件支持。
 
+Dockerfile 按固定上游 `build.sh` 的顺序执行依赖安装、NCCL 覆盖、`scripts/build_vendor.sh` 和 `scripts/build.sh build`，分别保存 Docker 构建缓存，避免原生编译失败后重复下载 PyTorch。构建阶段安装 `pciutils`：DeepSelect 的平台检测在没有 GPU 的构建机上也会调用 `lspci`。这只是补齐构建工具，不会伪造 GPU 或跳过寄存器溢出检查。
+
 如果只做 Dockerfile 静态检查：
 
 ```bash

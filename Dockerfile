@@ -39,8 +39,21 @@ RUN [[ "${DEEPINFER_COMMIT}" =~ ^[0-9a-f]{40}$ ]] \
     && git checkout --detach FETCH_HEAD \
     && test "$(git rev-parse HEAD)" = "${DEEPINFER_COMMIT}" \
     && python /opt/container-tools/check-upstream.py . /opt/container-source.lock.json \
-    && python -m pip install --no-cache-dir pip==25.2 setuptools==80.9.0 wheel==0.45.1 \
-    && ./build.sh \
+    && python -m pip install --no-cache-dir pip==25.2 setuptools==80.9.0 wheel==0.45.1
+
+# Mirror the locked upstream build.sh in cacheable dependency/compiler stages.
+# A native build failure must not invalidate the completed PyTorch download.
+RUN python -m pip install --no-cache-dir -r requirements-nvidia.txt \
+    && python -m pip install --no-cache-dir --no-deps --force-reinstall nvidia-nccl-cu13==2.32.3 \
+    && python /opt/container-tools/check-dependencies.py --output /opt/deepinfer/dependency-check.json
+
+# DeepSelect's build-time platform helper invokes lspci even on CPU build hosts.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends pciutils \
+    && rm -rf /var/lib/apt/lists/* \
+    && command -v lspci
+RUN bash ./scripts/build_vendor.sh
+RUN bash ./scripts/build.sh build \
     && python /opt/container-tools/check-dependencies.py --output /opt/deepinfer/dependency-check.json \
     && python /opt/container-tools/package-runtime.py /opt/deepinfer /opt/runtime /opt/container-source.lock.json
 

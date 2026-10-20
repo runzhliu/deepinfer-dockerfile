@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-20T10:17:41.895102+00:00",
+  "checked_at": "2026-10-20T11:35:30.243544+00:00",
   "upstream_commit": "8b16149741a4935e1dec8cea27853f273b374c5b",
   "validation": {
     "recipe_unit_tests": {
@@ -20,7 +20,11 @@
       "warnings": 0
     },
     "bilingual_commands_and_tables": "passed",
-    "full_image_build": "not_executed",
+    "full_image_build": {
+      "status": "retry_prepared",
+      "last_failed_attempt": 2,
+      "last_failure": "DeepSelect build-time platform detection could not find lspci; pciutils added to the build stage"
+    },
     "registry_push": "not_executed",
     "gpu_import": "not_executed",
     "model_inference": "not_executed",
@@ -28,7 +32,7 @@
   },
   "notes": [
     "A build recipe is not a prebuilt image.",
-    "Full compilation requires an available Linux amd64 build host.",
+    "The first full compilation attempt failed before native compilation; the recipe now supplies pciutils and separates cached dependency installation from native builds.",
     "GPU inference needs matching upstream-supported hardware and separate validation."
   ]
 }

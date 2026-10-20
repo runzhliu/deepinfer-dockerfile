@@ -39,6 +39,8 @@ bash scripts/build.sh
 
 Reduce `MAX_JOBS` and `NVCC_THREADS` if memory is constrained. Upstream FlashMLA / DeepSelect build recipes include SM100a and SM103a compilation targets. Changing an environment variable to SM90 or SM120 does not establish support for those GPUs.
 
+The Dockerfile follows the pinned upstream `build.sh` sequence: dependency installation, the NCCL override, `scripts/build_vendor.sh`, then `scripts/build.sh build`. Separate Docker layers preserve completed PyTorch downloads after a native-build failure. The build stage installs `pciutils` because DeepSelect's platform detection invokes `lspci` even on CPU build hosts. This supplies a missing build tool without impersonating a GPU or bypassing register-spill checks.
+
 For Dockerfile static checks only:
 
 ```bash
