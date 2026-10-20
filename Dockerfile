@@ -22,6 +22,16 @@ ENV VIRTUAL_ENV=/opt/venv \
     PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
+# Keep the cu132 PyTorch runtime, but pin the native/JIT compiler separately.
+# NVCC 13.2.78 produced real FlashMLA register spills in the strict build gate.
+FROM toolchain AS kernel-toolchain
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+       cuda-nvcc-13-1=13.1.115-1 cuda-cudart-dev-13-1 cuda-driver-dev-13-1 cuda-cccl-13-1 \
+    && rm -rf /var/lib/apt/lists/*
+ENV CUDA_HOME=/usr/local/cuda-13.1 \
+    PATH=/opt/venv/bin:/usr/local/cuda-13.1/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 FROM toolchain AS build
 ARG DEEPINFER_COMMIT=8b16149741a4935e1dec8cea27853f273b374c5b
 ARG MAX_JOBS=4
@@ -52,12 +62,17 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends pciutils \
     && rm -rf /var/lib/apt/lists/* \
     && command -v lspci
+COPY --from=kernel-toolchain /usr/local/cuda-13.1 /usr/local/cuda-13.1
+COPY scripts/record-toolchain.py /opt/container-tools/
+ENV CUDA_HOME=/usr/local/cuda-13.1 \
+    PATH=/opt/venv/bin:/usr/local/cuda-13.1/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 RUN bash ./scripts/build_vendor.sh
 RUN bash ./scripts/build.sh build \
     && python /opt/container-tools/check-dependencies.py --output /opt/deepinfer/dependency-check.json \
-    && python /opt/container-tools/package-runtime.py /opt/deepinfer /opt/runtime /opt/container-source.lock.json
+    && python /opt/container-tools/package-runtime.py /opt/deepinfer /opt/runtime /opt/container-source.lock.json \
+    && python /opt/container-tools/record-toolchain.py /opt/runtime/build-info.json
 
-FROM toolchain AS runtime
+FROM kernel-toolchain AS runtime
 ARG DEEPINFER_COMMIT=8b16149741a4935e1dec8cea27853f273b374c5b
 LABEL org.opencontainers.image.title="DeepInfer NVIDIA offline runtime" \
       org.opencontainers.image.description="Community container recipe; GPU validation is a separate step" \

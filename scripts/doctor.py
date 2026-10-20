@@ -20,6 +20,7 @@ def main() -> int:
     try:
         info = json.loads((ROOT / "build-info.json").read_text())
         report["upstream_commit"] = info["source"]["upstream_commit"]
+        report["toolchain"] = info.get("toolchain", {"status": "not_recorded"})
         if platform.machine() != "x86_64" or sys.version_info[:2] != (3, 12):
             raise RuntimeError("this recipe requires linux/amd64 and Python 3.12")
         sys.path.insert(0, str(ROOT))

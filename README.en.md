@@ -14,6 +14,7 @@ A community container build project for [DeepSeek-AI / DeepInfer](https://github
 | Base system | CUDA 13.2.0 devel / Ubuntu 24.04, pinned amd64 digest |
 | Python / GCC | Python 3.12 / GCC 13 |
 | PyTorch | Upstream pin `2.13.0+cu132` |
+| Native / JIT compiler | NVCC `13.1.115`, recorded separately from PyTorch's cu132 runtime |
 | NCCL | Upstream build-script pin `2.32.3` |
 | Backend | NVIDIA; this project does not provide an Ascend image |
 | Hardware scope | Upstream's declared SM100 scope; no H20, L20, RTX PRO 5000 / SM120 compatibility claim |
@@ -40,6 +41,8 @@ bash scripts/build.sh
 Reduce `MAX_JOBS` and `NVCC_THREADS` if memory is constrained. Upstream FlashMLA / DeepSelect build recipes include SM100a and SM103a compilation targets. Changing an environment variable to SM90 or SM120 does not establish support for those GPUs.
 
 The Dockerfile follows the pinned upstream `build.sh` sequence: dependency installation, the NCCL override, `scripts/build_vendor.sh`, then `scripts/build.sh build`. Separate Docker layers preserve completed PyTorch downloads after a native-build failure. The build stage installs `pciutils` because DeepSelect's platform detection invokes `lspci` even on CPU build hosts. This supplies a missing build tool without impersonating a GPU or bypassing register-spill checks.
+
+A full build with NVCC `13.2.78` failed FlashMLA's strict register-spill check: affected kernels reported a 16-byte stack frame, 20 bytes of spill stores, and 28 bytes of spill loads. The current recipe retries with NVCC `13.1.115` while retaining cu132 PyTorch and all upstream checks. This toolchain adjustment still requires complete build and GPU validation; it is not evidence that the issue is resolved. Successful artifacts record NVCC, GCC, `CUDA_HOME`, and the PyTorch CUDA version separately in `build-info.json`.
 
 For Dockerfile static checks only:
 

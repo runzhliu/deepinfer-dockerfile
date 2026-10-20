@@ -7,3 +7,4 @@
 !scripts/package-runtime.py
 !scripts/entrypoint.sh
 !scripts/doctor.py
+!scripts/record-toolchain.py

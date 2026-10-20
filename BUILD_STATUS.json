@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-20T11:35:30.243544+00:00",
+  "checked_at": "2026-10-20T12:37:06.668253+00:00",
   "upstream_commit": "8b16149741a4935e1dec8cea27853f273b374c5b",
   "validation": {
     "recipe_unit_tests": {
@@ -22,8 +22,9 @@
     "bilingual_commands_and_tables": "passed",
     "full_image_build": {
       "status": "retry_prepared",
-      "last_failed_attempt": 2,
-      "last_failure": "DeepSelect build-time platform detection could not find lspci; pciutils added to the build stage"
+      "last_failed_attempt": 3,
+      "last_failure": "FlashMLA strict register-spill check failed with NVCC 13.2.78: 16-byte stack, 20-byte spill stores, 28-byte spill loads in affected kernels",
+      "next_compiler": "NVCC 13.1.115, strict checks retained"
     },
     "registry_push": "not_executed",
     "gpu_import": "not_executed",
@@ -32,7 +33,7 @@
   },
   "notes": [
     "A build recipe is not a prebuilt image.",
-    "The first full compilation attempt failed before native compilation; the recipe now supplies pciutils and separates cached dependency installation from native builds.",
+    "Complete build attempts have failed on a missing pciutils dependency and real FlashMLA register spills. Neither failure is recorded as a successful image.",
     "GPU inference needs matching upstream-supported hardware and separate validation."
   ]
 }

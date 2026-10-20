@@ -14,6 +14,7 @@
 | 基础系统 | CUDA 13.2.0 devel / Ubuntu 24.04，固定 amd64 digest |
 | Python / GCC | Python 3.12 / GCC 13 |
 | PyTorch | 上游固定 `2.13.0+cu132` |
+| 原生 / JIT 编译器 | NVCC `13.1.115`；与 PyTorch 的 cu132 Runtime 分别记录 |
 | NCCL | 上游构建脚本固定 `2.32.3` |
 | 后端 | NVIDIA；本项目不提供 Ascend 镜像 |
 | 硬件范围 | 上游声明的 SM100；不承诺 H20、L20、RTX PRO 5000 / SM120 兼容 |
@@ -40,6 +41,8 @@ bash scripts/build.sh
 内存紧张时降低 `MAX_JOBS` 和 `NVCC_THREADS`。FlashMLA / DeepSelect 的上游配方包含 SM100a、SM103a 的编译目标，不能通过把环境变量改成 SM90 或 SM120 就获得该硬件支持。
 
 Dockerfile 按固定上游 `build.sh` 的顺序执行依赖安装、NCCL 覆盖、`scripts/build_vendor.sh` 和 `scripts/build.sh build`，分别保存 Docker 构建缓存，避免原生编译失败后重复下载 PyTorch。构建阶段安装 `pciutils`：DeepSelect 的平台检测在没有 GPU 的构建机上也会调用 `lspci`。这只是补齐构建工具，不会伪造 GPU 或跳过寄存器溢出检查。
+
+完整构建曾在 NVCC `13.2.78` 下触发 FlashMLA 的严格寄存器溢出检查：相关内核出现 16 字节栈帧、20 字节 spill stores 和 28 字节 spill loads。当前配方改用 NVCC `13.1.115` 做重编译，保留 cu132 PyTorch 和所有上游检查；这是一项待完整构建与 GPU 验证的工具链调整，不能据此宣称问题已解决。成功产物的 `build-info.json` 会分别记录 NVCC、GCC、`CUDA_HOME` 和 PyTorch CUDA 版本。
 
 如果只做 Dockerfile 静态检查：
 
