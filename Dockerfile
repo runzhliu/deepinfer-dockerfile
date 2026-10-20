@@ -27,12 +27,22 @@ ENV VIRTUAL_ENV=/opt/venv \
 FROM toolchain AS kernel-toolchain
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-       cuda-nvcc-13-1=13.1.115-1 cuda-cudart-dev-13-1 cuda-driver-dev-13-1 cuda-cccl-13-1 \
+       cuda-nvcc-13-1=13.1.115-1 cuda-libraries-dev-13-1 \
+       cuda-cudart-dev-13-1 cuda-driver-dev-13-1 cuda-cccl-13-1 \
     && rm -rf /var/lib/apt/lists/*
 ENV CUDA_HOME=/usr/local/cuda-13.1 \
     PATH=/opt/venv/bin:/usr/local/cuda-13.1/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+RUN for header in cuda_runtime.h cusparse.h cublas_v2.h cublasLt.h cusolverDn.h curand_kernel.h; do \
+      test -r "${CUDA_HOME}/include/${header}"; \
+    done \
+    && nvcc --version | grep -F V13.1.115 \
+    && printf '%s\n' '#include <cuda_runtime.h>' '#include <cusparse.h>' \
+       '#include <cublas_v2.h>' '#include <cublasLt.h>' '#include <cusolverDn.h>' \
+       '#include <curand_kernel.h>' 'int main() { return 0; }' > /tmp/toolkit-check.cu \
+    && nvcc -ccbin g++-13 -std=c++20 -arch=sm_100a -c /tmp/toolkit-check.cu -o /tmp/toolkit-check.o \
+    && rm /tmp/toolkit-check.cu /tmp/toolkit-check.o
 
-FROM toolchain AS build
+FROM kernel-toolchain AS build
 ARG DEEPINFER_COMMIT=8b16149741a4935e1dec8cea27853f273b374c5b
 ARG MAX_JOBS=4
 ARG NVCC_THREADS=2
@@ -62,10 +72,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends pciutils \
     && rm -rf /var/lib/apt/lists/* \
     && command -v lspci
-COPY --from=kernel-toolchain /usr/local/cuda-13.1 /usr/local/cuda-13.1
 COPY scripts/record-toolchain.py /opt/container-tools/
-ENV CUDA_HOME=/usr/local/cuda-13.1 \
-    PATH=/opt/venv/bin:/usr/local/cuda-13.1/bin:/usr/local/cuda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 RUN bash ./scripts/build_vendor.sh
 RUN bash ./scripts/build.sh build \
     && python /opt/container-tools/check-dependencies.py --output /opt/deepinfer/dependency-check.json \

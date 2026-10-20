@@ -44,6 +44,12 @@ Dockerfile 按固定上游 `build.sh` 的顺序执行依赖安装、NCCL 覆盖�
 
 完整构建曾在 NVCC `13.2.78` 下触发 FlashMLA 的严格寄存器溢出检查：相关内核出现 16 字节栈帧、20 字节 spill stores 和 28 字节 spill loads。当前配方改用 NVCC `13.1.115` 做重编译，保留 cu132 PyTorch 和所有上游检查；这是一项待完整构建与 GPU 验证的工具链调整，不能据此宣称问题已解决。成功产物的 `build-info.json` 会分别记录 NVCC、GCC、`CUDA_HOME` 和 PyTorch CUDA 版本。
 
+第一次切换 13.1 的尝试只补了编译器与 CUDA Runtime 开发组件，DeepSelect 随后因缺少 `cusparse.h` 失败，尚未验证 FlashMLA 在该编译器下能否通过。当前版本补齐 `cuda-libraries-dev-13-1`，构建与运行阶段继承同一份开发环境，并在下载 PyTorch 前检查 cuSPARSE、cuBLAS、cuSOLVER、cuRAND 头文件及编译一个包含这些头文件的最小 CUDA 翻译单元。它只验证开发环境完整性，不执行 GPU 测试。
+
+### 安装参考
+
+[deepinfer.run 安装页](https://deepinfer.run/install/) 是声明与 DeepSeek 无关联的社区指南，安装流程主要沿用[官方 README](https://github.com/deepseek-ai/DeepInfer#readme)。可用它核对 Python、GCC、加速器变量与离线入口；该页面没有提供预编译镜像、FlashMLA 溢出修复或 H20 兼容方案，不能替代实际构建验收。
+
 如果只做 Dockerfile 静态检查：
 
 ```bash

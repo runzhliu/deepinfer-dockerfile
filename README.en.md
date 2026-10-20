@@ -44,6 +44,12 @@ The Dockerfile follows the pinned upstream `build.sh` sequence: dependency insta
 
 A full build with NVCC `13.2.78` failed FlashMLA's strict register-spill check: affected kernels reported a 16-byte stack frame, 20 bytes of spill stores, and 28 bytes of spill loads. The current recipe retries with NVCC `13.1.115` while retaining cu132 PyTorch and all upstream checks. This toolchain adjustment still requires complete build and GPU validation; it is not evidence that the issue is resolved. Successful artifacts record NVCC, GCC, `CUDA_HOME`, and the PyTorch CUDA version separately in `build-info.json`.
 
+The first 13.1 attempt installed the compiler and CUDA runtime development components but failed in DeepSelect because `cusparse.h` was missing; it did not establish whether FlashMLA passes with that compiler. The current recipe adds `cuda-libraries-dev-13-1`, uses the same development environment for build and runtime, and checks the cuSPARSE, cuBLAS, cuSOLVER, and cuRAND headers before downloading PyTorch. It also compiles a minimal CUDA translation unit including those headers. This validates development-toolkit completeness without running GPU tests.
+
+### Installation references
+
+The [deepinfer.run installation page](https://deepinfer.run/install/) identifies itself as an unaffiliated community guide and largely follows the [official README](https://github.com/deepseek-ai/DeepInfer#readme). It is useful for checking Python, GCC, accelerator selection, and offline entry points. The page does not provide a prebuilt image, a FlashMLA spill fix, or an H20 compatibility path, so it cannot replace actual build verification.
+
 For Dockerfile static checks only:
 
 ```bash

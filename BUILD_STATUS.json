@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-20T12:37:06.668253+00:00",
+  "checked_at": "2026-10-20T12:46:03.788869+00:00",
   "upstream_commit": "8b16149741a4935e1dec8cea27853f273b374c5b",
   "validation": {
     "recipe_unit_tests": {
@@ -21,10 +21,12 @@
     },
     "bilingual_commands_and_tables": "passed",
     "full_image_build": {
-      "status": "retry_prepared",
-      "last_failed_attempt": 3,
-      "last_failure": "FlashMLA strict register-spill check failed with NVCC 13.2.78: 16-byte stack, 20-byte spill stores, 28-byte spill loads in affected kernels",
-      "next_compiler": "NVCC 13.1.115, strict checks retained"
+      "status": "failed",
+      "last_failed_attempt": 4,
+      "last_failure": "DeepSelect compilation could not find cusparse.h after the compiler-only CUDA 13.1 installation",
+      "recipe_repair": "Add cuda-libraries-dev-13-1 and validate math-library headers with a compile probe before installing PyTorch",
+      "repair_validation": "static_checks_only; complete image not yet rebuilt",
+      "flashmla_nvcc_13_1_result": "not_reached"
     },
     "registry_push": "not_executed",
     "gpu_import": "not_executed",
@@ -33,7 +35,7 @@
   },
   "notes": [
     "A build recipe is not a prebuilt image.",
-    "Complete build attempts have failed on a missing pciutils dependency and real FlashMLA register spills. Neither failure is recorded as a successful image.",
+    "No complete image has passed. Recorded failures include missing pciutils, real FlashMLA spills with NVCC 13.2.78, and missing cuSPARSE headers in the first NVCC 13.1 attempt.",
     "GPU inference needs matching upstream-supported hardware and separate validation."
   ]
 }
