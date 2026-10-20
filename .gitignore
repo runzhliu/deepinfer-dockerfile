@@ -1,0 +1,10 @@
+.local/
+.venv/
+__pycache__/
+*.py[cod]
+*.log
+*.tar
+*.oci
+.env
+.env.*
+!.env.example

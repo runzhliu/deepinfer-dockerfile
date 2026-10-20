@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "upstream_repository": "https://github.com/deepseek-ai/DeepInfer.git",
+  "upstream_commit": "8b16149741a4935e1dec8cea27853f273b374c5b",
+  "base_image": "nvidia/cuda:13.2.0-devel-ubuntu24.04@sha256:d266e59b88c295bc5fa0e4cef9064eaff84939381b09e2c3d76a5532a303e42d",
+  "platform": "linux/amd64",
+  "accelerator": "nvidia",
+  "files_sha256": {
+    "build.sh": "840283a6559bf99f38dbb153f168ddd3157a11669f9f10a38d90809a12175c7d",
+    "scripts/build.sh": "b750dc4d7861340ab5312823e7782bce347fec01911866e9121a2cf4f4294406",
+    "scripts/build_vendor.sh": "9c2ee38ea4f3c96604cc38adba98854e21d11c54616d5c317b5450ce608c7a73",
+    "setup.py": "c9e99ee64a51fe57a97bbf81729be711b403c49e5fbb856f388e3e5dbe696ec4",
+    "requirements.txt": "6b7eb923377c7fa34ea950d5f8fb8c917a240b325494e13a83b3852d7d479db9",
+    "requirements-dev.txt": "ff1d8438df5a35604424fc78fa4965fe36c733c47643eaffffb5b15d06e07b51",
+    "requirements-nvidia.txt": "f76510c5b75dc9633669596d03534a537b9f14241718b8fc93fdff9e4b795162",
+    "pyproject.toml": "30de7579a8df8b3b4c4fe6efa957e5bdf3ac39a0a87ddfff3c76836f95f530d0",
+    ".gitmodules": "abaec302b842bd11753e114cc02af43925c7216f9673983090b879e46b9fc157",
+    "deepinfer/__init__.py": "049d7fa1492d4b0c3f6947b7150946ec92a57e74b4ae25415392de7aed5ec7a4"
+  },
+  "vendor_commits": {
+    "vendor/DeepEP": "93eb6eb238127e96c6d7a4a625a6dad158348509",
+    "vendor/DeepEP-Ascend": "3b25377d04b24fc6154698ded78a2bcb2c59afff",
+    "vendor/DeepGEMM": "1fc9c66975ee322d628b3288534ca0e9ce12a64d",
+    "vendor/DeepGEMM-Ascend": "3a35326271b069b8b5bf1a754435acd6cc91575b",
+    "vendor/DeepSelect": "bfa4507d935f17ebfc3d0f00ff7d3c9a4d0e5c18",
+    "vendor/FlashMLA": "2e5429fc5653bab6e081f09477126f731882a6a9"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-10-20T10:17:41.895102+00:00",
+  "upstream_commit": "8b16149741a4935e1dec8cea27853f273b374c5b",
+  "validation": {
+    "recipe_unit_tests": {
+      "status": "passed",
+      "count": 7
+    },
+    "shell_syntax": "passed",
+    "python_syntax": "passed",
+    "source_lock": {
+      "status": "passed",
+      "files": 10,
+      "vendor_gitlinks": 6
+    },
+    "docker_build_check": {
+      "status": "passed",
+      "platform": "linux/amd64",
+      "warnings": 0
+    },
+    "bilingual_commands_and_tables": "passed",
+    "full_image_build": "not_executed",
+    "registry_push": "not_executed",
+    "gpu_import": "not_executed",
+    "model_inference": "not_executed",
+    "benchmark": "not_executed"
+  },
+  "notes": [
+    "A build recipe is not a prebuilt image.",
+    "Full compilation requires an available Linux amd64 build host.",
+    "GPU inference needs matching upstream-supported hardware and separate validation."
+  ]
+}
