@@ -46,6 +46,8 @@ A full build with NVCC `13.2.78` failed FlashMLA's strict register-spill check: 
 
 The first 13.1 attempt installed the compiler and CUDA runtime development components but failed in DeepSelect because `cusparse.h` was missing; it did not establish whether FlashMLA passes with that compiler. The current recipe adds `cuda-libraries-dev-13-1`, uses the same development environment for build and runtime, and checks the cuSPARSE, cuBLAS, cuSOLVER, and cuRAND headers before downloading PyTorch. It also compiles a minimal CUDA translation unit including those headers. This validates development-toolkit completeness without running GPU tests.
 
+That SDK preflight subsequently passed: the headers were readable and NVCC `13.1.115` compiled the minimal translation unit. However, the controller's 40-minute stage deadline terminated that run during cache export, before native operators were rebuilt with the complete 13.1 SDK. Passing the SDK probe is not a successful engine build. Subsequent retries budget SDK computation and cache export separately and reuse the saved base-environment cache.
+
 ### Installation references
 
 The [deepinfer.run installation page](https://deepinfer.run/install/) identifies itself as an unaffiliated community guide and largely follows the [official README](https://github.com/deepseek-ai/DeepInfer#readme). It is useful for checking Python, GCC, accelerator selection, and offline entry points. The page does not provide a prebuilt image, a FlashMLA spill fix, or an H20 compatibility path, so it cannot replace actual build verification.

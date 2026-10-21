@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "checked_at": "2026-10-20T12:46:03.788869+00:00",
+  "checked_at": "2026-10-21T02:27:36.913628+00:00",
   "upstream_commit": "8b16149741a4935e1dec8cea27853f273b374c5b",
   "validation": {
     "recipe_unit_tests": {
@@ -21,21 +21,26 @@
     },
     "bilingual_commands_and_tables": "passed",
     "full_image_build": {
-      "status": "failed",
-      "last_failed_attempt": 4,
-      "last_failure": "DeepSelect compilation could not find cusparse.h after the compiler-only CUDA 13.1 installation",
-      "recipe_repair": "Add cuda-libraries-dev-13-1 and validate math-library headers with a compile probe before installing PyTorch",
-      "repair_validation": "static_checks_only; complete image not yet rebuilt",
+      "status": "not_completed",
+      "last_run_failure": "Controller 40-minute SDK stage deadline expired during cache export, after the SDK compile probe passed",
+      "native_compilation_with_complete_cuda_13_1_sdk": "not_reached",
       "flashmla_nvcc_13_1_result": "not_reached"
     },
     "registry_push": "not_executed",
     "gpu_import": "not_executed",
     "model_inference": "not_executed",
-    "benchmark": "not_executed"
+    "benchmark": "not_executed",
+    "sdk_preflight": {
+      "status": "passed",
+      "nvcc": "13.1.115",
+      "math_library_headers": "passed",
+      "minimal_cuda_translation_unit": "compiled",
+      "gpu_execution": "not_executed"
+    }
   },
   "notes": [
     "A build recipe is not a prebuilt image.",
-    "No complete image has passed. Recorded failures include missing pciutils, real FlashMLA spills with NVCC 13.2.78, and missing cuSPARSE headers in the first NVCC 13.1 attempt.",
+    "No complete image has passed. The complete CUDA 13.1 SDK probe passed, but the subsequent cache export exceeded the controller stage deadline; this is not an operator compilation result.",
     "GPU inference needs matching upstream-supported hardware and separate validation."
   ]
 }

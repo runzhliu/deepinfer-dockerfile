@@ -46,6 +46,8 @@ Dockerfile 按固定上游 `build.sh` 的顺序执行依赖安装、NCCL 覆盖�
 
 第一次切换 13.1 的尝试只补了编译器与 CUDA Runtime 开发组件，DeepSelect 随后因缺少 `cusparse.h` 失败，尚未验证 FlashMLA 在该编译器下能否通过。当前版本补齐 `cuda-libraries-dev-13-1`，构建与运行阶段继承同一份开发环境，并在下载 PyTorch 前检查 cuSPARSE、cuBLAS、cuSOLVER、cuRAND 头文件及编译一个包含这些头文件的最小 CUDA 翻译单元。它只验证开发环境完整性，不执行 GPU 测试。
 
+该 SDK 预检随后已通过：头文件可读，NVCC `13.1.115` 成功编译最小翻译单元。但该次任务在导出缓存时触发控制器的 40 分钟阶段期限，被提前终止，尚未进入使用完整 13.1 SDK 的算子重编译；SDK 通过不代表引擎构建成功。后续重试分别统计 SDK 构建和缓存导出的期限，并复用已保存的基础环境缓存。
+
 ### 安装参考
 
 [deepinfer.run 安装页](https://deepinfer.run/install/) 是声明与 DeepSeek 无关联的社区指南，安装流程主要沿用[官方 README](https://github.com/deepseek-ai/DeepInfer#readme)。可用它核对 Python、GCC、加速器变量与离线入口；该页面没有提供预编译镜像、FlashMLA 溢出修复或 H20 兼容方案，不能替代实际构建验收。
